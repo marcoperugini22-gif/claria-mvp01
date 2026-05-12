@@ -1,0 +1,589 @@
+// ============================================================================
+//  CLARIA – Prisma Schema
+// ----------------------------------------------------------------------------
+//  Piattaforma B2B2C di financial engagement per le nuove generazioni.
+//  Lo schema è costruito per supportare:
+//   1. Onboarding & profilazione psicofinanziaria (4 cluster comportamentali)
+//   2. Dashboard adattiva AI-driven (widget/tono/contenuti per profilo)
+//   3. Saving journeys con milestone progressive
+//   4. Modulo educativo di micro-learning + bias detection
+//   5. Architettura multi-tenant per integrazione white-label con banche/fintech
+// ============================================================================
+
+generator client {
+  provider = "prisma-client-js"
+}
+
+datasource db {
+  provider = "postgresql"
+  url      = env("DATABASE_URL")
+}
+
+// ============================================================================
+//  ENUMS
+// ============================================================================
+
+/// I 4 cluster comportamentali emersi dai test di mercato Claria.
+/// Ogni profilo guida l'adattamento di UI, tono e contenuti nella dashboard.
+enum PsychoFinancialProfile {
+  /// Sa cosa fare ma rimanda. Necessita di percorsi guidati step-by-step.
+  RIMANDATORE_STRATEGICO
+  /// Prova ansia nel gestire i soldi. Necessita di tono leggero e rassicurante.
+  EVITANTE
+  /// Pianifica eccessivamente e si stressa. Necessita di automazione e chiarezza.
+  CONTROLLORE_FRAGILE
+  /// Spende d'impulso e poi se ne pente. Necessita di alert proattivi.
+  IMPULSIVO_CONSAPEVOLE
+}
+
+enum TransactionType {
+  INCOME
+  EXPENSE
+}
+
+enum TransactionCategory {
+  FOOD
+  TRANSPORT
+  ENTERTAINMENT
+  SHOPPING
+  BILLS
+  HEALTH
+  EDUCATION
+  SUBSCRIPTIONS
+  SAVINGS
+  TRANSFER
+  OTHER
+}
+
+enum SavingGoalStatus {
+  ACTIVE
+  COMPLETED
+  PAUSED
+  ABANDONED
+}
+
+enum SavingGoalCategory {
+  EMERGENCY_FUND
+  TRAVEL
+  EDUCATION
+  HOME
+  TECH
+  EXPERIENCE
+  GIFT
+  CUSTOM
+}
+
+/// Bias decisionali intercettati dalla piattaforma per generare alert mirati.
+enum BiasType {
+  PROCRASTINATION       // rimando azioni finanziarie
+  IMPULSIVITY           // acquisti d'impulso
+  PRESENT_BIAS          // preferenza per ricompensa immediata
+  LOSS_AVERSION         // paura di perdere blocca scelte razionali
+  ANCHORING             // si ancora a un valore di riferimento
+  OVERCONFIDENCE        // sovrastima capacità di gestione
+  STATUS_QUO            // resistenza al cambiamento abitudini
+  MENTAL_ACCOUNTING     // gestisce il denaro a "compartimenti stagni"
+}
+
+/// Eventi comportamentali tracciati per alimentare il motore di personalizzazione.
+enum BehavioralEventType {
+  SESSION_START
+  SESSION_END
+  ONBOARDING_COMPLETED
+  GOAL_CREATED
+  GOAL_COMPLETED
+  GOAL_ABANDONED
+  TRANSACTION_LOGGED
+  IMPULSIVE_SPEND_FLAGGED
+  CONTENT_VIEWED
+  CONTENT_COMPLETED
+  CONTENT_ABANDONED
+  ALERT_DISMISSED
+  ALERT_ACTED_UPON
+  DASHBOARD_HESITATION   // utente apre e chiude senza azioni → segnale evitamento
+  REPEATED_CHECK         // controlla saldo > N volte/giorno → segnale controllore fragile
+}
+
+enum LearningContentType {
+  ARTICLE
+  QUIZ
+  MICRO_LESSON
+  EXERCISE
+  BIAS_CHECK
+}
+
+enum PartnerType {
+  RETAIL_BANK
+  CHALLENGER_BANK
+  FINTECH
+  NEOBANK
+  OTHER
+}
+
+enum UserRole {
+  END_USER          // l'utente finale (studente, neolaureato, giovane lavoratore)
+  PARTNER_ADMIN     // referente lato banca/fintech
+  CLARIA_ADMIN      // team interno Claria
+}
+
+// ============================================================================
+//  CORE: B2B2C MULTI-TENANCY
+// ============================================================================
+
+/// Tenant del modello B2B2C: la banca o fintech che integra Claria nei
+/// propri touchpoint digitali. Ogni utente finale è agganciato a un Partner
+/// per consentire white-labeling, reportistica dedicata e isolamento dati.
+model Partner {
+  id          String      @id @default(cuid())
+  slug        String      @unique // es. "unicredit", "revolut" → per routing white-label
+  name        String
+  type        PartnerType @default(FINTECH)
+
+  // White-label theming: il partner può sovrascrivere brand colors e logo
+  brandPrimaryColor   String? // hex es. "#0066CC"
+  brandSecondaryColor String?
+  logoUrl             String?
+  customCopy          Json?   // override di stringhe specifiche per il partner
+
+  // Configurazione modulare: il partner sceglie quali moduli attivare
+  modulesEnabled Json?   // es. { "savingJourneys": true, "biasAlerts": true, ... }
+
+  contactEmail   String?
+  contractStart  DateTime?
+  contractEnd    DateTime?
+  isActive       Boolean   @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  users     User[]
+
+  @@index([slug])
+}
+
+// ============================================================================
+//  USER
+// ============================================================================
+
+model User {
+  id    String  @id @default(cuid())
+  email String  @unique
+  name  String?
+
+  // Auth minima per l'MVP – sostituibile con NextAuth/Clerk in produzione
+  hashedPassword String?
+
+  role UserRole @default(END_USER)
+
+  // ----- Dati demografici dichiarativi (raccolti in onboarding) -----
+  age              Int?
+  occupation       String? // "student" | "new_graduate" | "young_professional" | ...
+  monthlyIncome    Float?  // dichiarato, in euro
+  monthlyExpenses  Float?  // dichiarato, stima
+  hasFirstJob      Boolean?
+  livingSituation  String? // "with_family" | "alone" | "shared" | ...
+
+  // ----- Profilo psicofinanziario -----
+  profile           PsychoFinancialProfile?
+  profileAssignedAt DateTime?
+  /// Punteggi grezzi per i 4 profili (somma pesata risposte onboarding).
+  /// Permette di tracciare profili "secondari" e migrazioni nel tempo.
+  /// Esempio: { "RIMANDATORE_STRATEGICO": 12, "EVITANTE": 8, ... }
+  profileScores     Json?
+  /// Confidence (0-1) dell'assegnazione del profilo.
+  /// Sotto soglia → la dashboard mostra un tono "universale" più neutro.
+  profileConfidence Float?
+
+  // ----- Self-assessment educativo -----
+  /// Auto-valutazione 1-5 della propria literacy finanziaria
+  selfRatedLiteracy Int?
+  /// Obiettivo principale dichiarato (free-text → embedding lato AI)
+  primaryGoal       String?
+
+  // ----- B2B2C linkage -----
+  partnerId String?
+  partner   Partner? @relation(fields: [partnerId], references: [id])
+
+  // ----- Preferenze UX adattive -----
+  /// Override manuale del tono se l'utente lo richiede esplicitamente
+  preferredTone     String? // "encouraging" | "direct" | "playful" | "formal"
+  notificationsOptIn Boolean @default(true)
+  locale            String  @default("it-IT")
+
+  // ----- Onboarding state -----
+  onboardingCompletedAt DateTime?
+  lastActiveAt          DateTime?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  // ----- Relations -----
+  onboardingAnswers OnboardingAnswer[]
+  transactions      Transaction[]
+  savingGoals       SavingGoal[]
+  recurringEntries  RecurringEntry[]
+  behavioralEvents  BehavioralEvent[]
+  learningProgress  LearningProgress[]
+  biasAlerts        BiasAlert[]
+  aiInteractions    AiInteraction[]
+
+  @@index([partnerId])
+  @@index([profile])
+  @@index([email])
+}
+
+// ============================================================================
+//  ONBOARDING & PROFILING
+// ============================================================================
+
+/// Catalogo delle domande dell'onboarding. Versioning incluso per A/B test
+/// futuri sul questionario di profilazione.
+model OnboardingQuestion {
+  id          String @id @default(cuid())
+  /// Codice stabile della domanda, usato dal motore di scoring (es. "Q01_PROCRASTINATION").
+  code        String @unique
+  text        String
+  helperText  String?
+  /// "single_choice" | "multi_choice" | "scale_1_5" | "open_text"
+  questionType String
+  /// Ordine di presentazione nel flusso
+  order       Int    @default(0)
+  /// Versione del questionario (per A/B test e iterazioni)
+  version     Int    @default(1)
+  isActive    Boolean @default(true)
+
+  options OnboardingOption[]
+  answers OnboardingAnswer[]
+
+  @@index([version, isActive])
+}
+
+/// Singole risposte possibili. Ognuna porta un vettore di pesi sui 4 profili.
+/// Esempio: l'opzione "Apro l'app bancaria solo quando è strettamente necessario"
+///   pesi = { "EVITANTE": 3, "CONTROLLORE_FRAGILE": -2, ... }
+model OnboardingOption {
+  id         String @id @default(cuid())
+  questionId String
+  question   OnboardingQuestion @relation(fields: [questionId], references: [id], onDelete: Cascade)
+  label      String
+  value      String
+  /// Vettore di pesi: { profile: punteggio } – consumato dal profileScoring service.
+  profileWeights Json
+  order      Int    @default(0)
+
+  answers OnboardingAnswer[]
+
+  @@index([questionId])
+}
+
+model OnboardingAnswer {
+  id String @id @default(cuid())
+
+  userId String
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  questionId String
+  question   OnboardingQuestion @relation(fields: [questionId], references: [id])
+
+  /// Quando la domanda è a scelta multipla / singola, si referenzia l'opzione.
+  optionId   String?
+  option     OnboardingOption? @relation(fields: [optionId], references: [id])
+
+  /// Per risposte aperte / scala numerica
+  rawAnswer  String?
+  numericAnswer Float?
+
+  answeredAt DateTime @default(now())
+
+  @@index([userId])
+  @@index([questionId])
+}
+
+// ============================================================================
+//  TRANSACTIONS (MOCK – per MVP non c'è open banking)
+// ============================================================================
+
+/// Transazioni simulate per il prototipo. In una v2 il modello è compatibile
+/// con un'integrazione PSD2/open banking (basta riempire `externalId`).
+model Transaction {
+  id String @id @default(cuid())
+
+  userId String
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  amount      Float // sempre positivo; il segno reale è dato da `type`
+  type        TransactionType
+  category    TransactionCategory @default(OTHER)
+  description String?
+  merchant    String?
+  date        DateTime            @default(now())
+
+  // ----- Segnali comportamentali sulla singola transazione -----
+  /// Flag impostato (a) dall'utente in autocoscienza, (b) dal motore euristico.
+  /// Esempio euristica: spesa serale + categoria SHOPPING + importo > media → impulsiva.
+  isImpulsive    Boolean @default(false)
+  /// Indica se la transazione è stata "regrettata" dall'utente in app.
+  regretFlagged  Boolean @default(false)
+  /// Origine: "manual" | "mock_seed" | "open_banking" (futuro)
+  source         String  @default("manual")
+  externalId     String? // id univoco lato PSP/banca, per dedup quando arriverà PSD2
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, date])
+  @@index([userId, category])
+  @@index([userId, isImpulsive])
+}
+
+// ============================================================================
+//  SAVING JOURNEYS
+// ============================================================================
+
+model SavingGoal {
+  id String @id @default(cuid())
+
+  userId String
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  title         String
+  description   String?
+  category      SavingGoalCategory @default(CUSTOM)
+  /// Emoji o codice icona per la card del goal (es. "✈️", "🏠", "💻")
+  icon          String?
+
+  targetAmount  Float
+  currentAmount Float              @default(0)
+  deadline      DateTime?
+
+  status        SavingGoalStatus   @default(ACTIVE)
+
+  /// Se true, è il goal principale mostrato in evidenza nella dashboard.
+  /// Vincolo applicativo (non DB): max 1 pinned per utente.
+  isPinned      Boolean            @default(false)
+
+  /// Adattamento del saving journey al profilo dell'utente:
+  /// - RIMANDATORE_STRATEGICO → milestone piccole e ravvicinate
+  /// - EVITANTE              → linguaggio rassicurante, nessuna pressione
+  /// - CONTROLLORE_FRAGILE   → milestone esatte, tracking puntuale
+  /// - IMPULSIVO_CONSAPEVOLE → check-in pre-spesa, "pausa decisionale"
+  /// Snapshot del profilo al momento della creazione goal (immutable).
+  profileAtCreation PsychoFinancialProfile?
+
+  /// Definizione delle milestone progressive (JSON serializzato):
+  /// [{ "label": "Primo 20%", "threshold": 200, "reached": false }, ...]
+  milestones Json?
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+  completedAt DateTime?
+
+  contributions SavingContribution[]
+
+  @@index([userId, status])
+}
+
+/// Singolo "versamento" verso un saving goal. Tenerli separati permette di
+/// disegnare grafici di progresso e di calcolare velocità di accumulo.
+model SavingContribution {
+  id String @id @default(cuid())
+
+  goalId String
+  goal   SavingGoal @relation(fields: [goalId], references: [id], onDelete: Cascade)
+
+  amount    Float
+  note      String?
+  /// Indica se il versamento è il risultato di un nudge proattivo della piattaforma
+  /// (es. "Hai evitato una spesa impulsiva di €15 → vuoi metterli da parte?").
+  triggeredByNudge Boolean @default(false)
+
+  createdAt DateTime @default(now())
+
+  @@index([goalId, createdAt])
+}
+
+/// Entrate o uscite ricorrenti (stipendio mensile, abbonamenti, affitto).
+/// Vengono materializzate come Transaction reali tramite un job/cron logico.
+model RecurringEntry {
+  id String @id @default(cuid())
+
+  userId String
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  amount      Float
+  type        TransactionType
+  category    TransactionCategory @default(OTHER)
+  description String?
+
+  /// "monthly" | "weekly" | "yearly" — per ora solo monthly nell'MVP
+  frequency   String  @default("monthly")
+  /// Giorno del mese di esecuzione (1-28 per evitare problemi con febbraio)
+  dayOfMonth  Int     @default(1)
+
+  /// Data della prima occorrenza
+  startDate   DateTime
+  /// Data dell'ultima occorrenza (null = indefinito)
+  endDate     DateTime?
+
+  /// Ultima volta che la regola ha generato una Transaction reale
+  lastMaterializedAt DateTime?
+
+  isActive    Boolean @default(true)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  @@index([userId, isActive])
+}
+
+// ============================================================================
+//  BEHAVIORAL TRACKING
+// ============================================================================
+
+/// Stream di eventi comportamentali utilizzato dal motore di personalizzazione
+/// e dal sistema di bias detection. Volutamente leggero (event sourcing-friendly).
+model BehavioralEvent {
+  id String @id @default(cuid())
+
+  userId String
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  eventType BehavioralEventType
+  /// Payload arbitrario: { route, duration_ms, transaction_id, content_id, ... }
+  metadata  Json?
+
+  /// Sessione applicativa, per analisi di flusso
+  sessionId String?
+
+  timestamp DateTime @default(now())
+
+  @@index([userId, eventType, timestamp])
+  @@index([sessionId])
+}
+
+// ============================================================================
+//  LEARNING & BIAS
+// ============================================================================
+
+/// Catalogo dei contenuti educativi. Ogni contenuto può essere taggato per
+/// profilo target e per bias, così il recommender può proporlo solo
+/// quando ha senso.
+model LearningContent {
+  id String @id @default(cuid())
+
+  slug        String              @unique
+  title       String
+  summary     String?
+  body        String              // markdown
+  contentType LearningContentType @default(MICRO_LESSON)
+
+  estimatedMinutes Int @default(3)
+  difficultyLevel  Int @default(1) // 1 (base) – 5 (avanzato)
+
+  /// Se valorizzato, il contenuto è proposto prevalentemente a quel profilo.
+  targetProfile PsychoFinancialProfile?
+
+  /// Se valorizzato, il contenuto affronta esplicitamente un bias.
+  /// Es. un articolo sul "present bias" verrà spinto agli IMPULSIVO_CONSAPEVOLE.
+  addressesBias BiasType?
+
+  /// Tag liberi (es. "budget", "risparmio", "carte", "investimenti-base")
+  tags     String[]
+
+  isPublished Boolean @default(true)
+  order       Int     @default(0)
+
+  createdAt DateTime @default(now())
+  updatedAt DateTime @updatedAt
+
+  progress LearningProgress[]
+
+  @@index([targetProfile])
+  @@index([addressesBias])
+}
+
+model LearningProgress {
+  id String @id @default(cuid())
+
+  userId    String
+  user      User            @relation(fields: [userId], references: [id], onDelete: Cascade)
+  contentId String
+  content   LearningContent @relation(fields: [contentId], references: [id], onDelete: Cascade)
+
+  completed   Boolean   @default(false)
+  /// Quanto dell'item è stato consumato (0.0 – 1.0). Utile per articoli lunghi.
+  progressPct Float     @default(0)
+  startedAt   DateTime  @default(now())
+  completedAt DateTime?
+
+  /// Feedback opzionale dell'utente sul contenuto (1-5 stelle)
+  rating Int?
+
+  @@unique([userId, contentId])
+  @@index([userId, completed])
+}
+
+/// Alert generato dalla piattaforma quando rileva un pattern comportamentale
+/// associabile a un bias. Visualizzato in dashboard con tono adattato al profilo.
+model BiasAlert {
+  id String @id @default(cuid())
+
+  userId String
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  bias    BiasType
+  /// Messaggio già renderizzato (generato dall'AI o template-based).
+  message String
+  /// Suggerimento d'azione concreta che il messaggio invita a compiere.
+  /// Es. { "action": "create_saving_goal", "amount": 15 }
+  suggestedAction Json?
+
+  /// Contesto che ha attivato l'alert (es. transaction_id, pattern rilevato).
+  context Json?
+
+  read         Boolean   @default(false)
+  dismissedAt  DateTime?
+  actedUponAt  DateTime?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, read, createdAt])
+}
+
+// ============================================================================
+//  AI INTERACTIONS
+// ============================================================================
+
+/// Log strutturato delle chiamate al modello LLM per generazione consigli
+/// personalizzati. Serve per: (a) debugging, (b) cost monitoring,
+/// (c) eventuale fine-tuning su esempi alta-qualità.
+model AiInteraction {
+  id String @id @default(cuid())
+
+  userId String
+  user   User @relation(fields: [userId], references: [id], onDelete: Cascade)
+
+  /// Caso d'uso che ha invocato l'AI:
+  /// "advice_generation" | "bias_alert_copy" | "goal_breakdown" | "content_personalization"
+  useCase String
+
+  model       String  // es. "gpt-4o-mini"
+  promptHash  String? // hash del prompt per dedup/cache
+  inputTokens Int?
+  outputTokens Int?
+  latencyMs   Int?
+
+  /// Snapshot del profilo dell'utente al momento della chiamata (per audit).
+  profileSnapshot PsychoFinancialProfile?
+
+  /// Output (troncato se molto lungo), utile per QA.
+  outputPreview String?
+
+  /// Feedback implicito: l'utente ha agito sul consiglio?
+  wasHelpful Boolean?
+
+  createdAt DateTime @default(now())
+
+  @@index([userId, createdAt])
+  @@index([useCase])
+}

@@ -1,0 +1,33 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+  --claria-ink: #1E15C2;
+  --claria-cream: #FFF7CE;
+  --claria-warm: #FAF7EE;
+}
+
+html,
+body {
+  background: var(--claria-cream);
+  color: var(--claria-ink);
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+}
+
+/* Mobile-first: ottimizzato per viewport stretti (target gen-z, primary use case) */
+body {
+  font-family: ui-sans-serif, system-ui, -apple-system, "Segoe UI", Roboto, sans-serif;
+  min-height: 100vh;
+  min-height: 100dvh;
+}
+
+/* Hide scrollbar in horizontal scroll containers (carousels mobile) */
+.scrollbar-hide::-webkit-scrollbar {
+  display: none;
+}
+.scrollbar-hide {
+  -ms-overflow-style: none;
+  scrollbar-width: none;
+}
