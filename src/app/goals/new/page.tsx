@@ -16,6 +16,13 @@ const GOAL_TEMPLATES = [
   { category: "CUSTOM", icon: "⭐", title: "Altro", suggestedAmount: 500 },
 ] as const;
 
+function monthsUntil(dateStr: string): number | null {
+  if (!dateStr) return null;
+  const diff = new Date(dateStr).getTime() - Date.now();
+  if (diff <= 0) return null;
+  return Math.ceil(diff / (30 * 24 * 60 * 60 * 1000));
+}
+
 export default function NewGoalPage() {
   const router = useRouter();
   const [selectedTemplate, setSelectedTemplate] = useState<number | null>(null);
@@ -23,12 +30,17 @@ export default function NewGoalPage() {
   const [icon, setIcon] = useState("⭐");
   const [category, setCategory] = useState<typeof GOAL_TEMPLATES[number]["category"]>("CUSTOM");
   const [targetAmount, setTargetAmount] = useState("");
+  const [deadline, setDeadline] = useState("");
   const [submitting, setSubmitting] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const amountNum = parseFloat(targetAmount.replace(",", "."));
   const amountValid = !isNaN(amountNum) && amountNum > 0;
   const canSubmit = title.trim().length > 0 && amountValid;
+
+  const months = deadline ? monthsUntil(deadline) : null;
+  const suggestedMonthly =
+    months && amountValid ? Math.ceil(amountNum / months) : null;
 
   function selectTemplate(idx: number) {
     const t = GOAL_TEMPLATES[idx];
@@ -52,6 +64,7 @@ export default function NewGoalPage() {
           icon,
           category,
           targetAmount: amountNum,
+          deadline: deadline || undefined,
         }),
       });
       if (!res.ok) throw new Error();
@@ -63,9 +76,13 @@ export default function NewGoalPage() {
     }
   }
 
+  // Min date: tomorrow
+  const minDate = new Date();
+  minDate.setDate(minDate.getDate() + 1);
+  const minDateStr = minDate.toISOString().slice(0, 10);
+
   return (
-    <main className="min-h-dvh">
-      {/* Header */}
+    <main className="min-h-dvh pb-nav">
       <header className="px-5 pt-5 pb-3 flex items-center justify-between">
         <Link
           href="/dashboard"
@@ -77,7 +94,6 @@ export default function NewGoalPage() {
         <div className="w-9" />
       </header>
 
-      {/* Title intro */}
       <section className="px-5 pt-4 pb-4">
         <h2 className="text-[22px] font-medium leading-[1.15] tracking-[-0.02em] text-claria-ink">
           Cosa stai{" "}
@@ -119,7 +135,7 @@ export default function NewGoalPage() {
 
       {/* Title input */}
       <section className="px-5 pb-3">
-        <div className="bg-white rounded-2xl px-4 py-3.5 flex items-center gap-3">
+        <div className="bg-white rounded-2xl px-4 py-3.5 flex items-center gap-3" style={{ boxShadow: "0 2px 10px rgba(30,21,194,0.04)" }}>
           <button
             type="button"
             onClick={() => {
@@ -137,10 +153,7 @@ export default function NewGoalPage() {
             <input
               type="text"
               value={title}
-              onChange={(e) => {
-                setTitle(e.target.value);
-                setSelectedTemplate(null);
-              }}
+              onChange={(e) => { setTitle(e.target.value); setSelectedTemplate(null); }}
               placeholder="Es. Viaggio a Tokyo"
               className="bg-transparent w-full text-[14px] text-claria-ink font-medium focus:outline-none placeholder-claria-ink/30"
             />
@@ -149,7 +162,7 @@ export default function NewGoalPage() {
       </section>
 
       {/* Amount input */}
-      <section className="px-5 pt-4 pb-4 text-center">
+      <section className="px-5 pt-3 pb-4 text-center">
         <p className="text-[10px] font-medium uppercase tracking-[0.1em] text-claria-ink/50 mb-2">
           Quanto vuoi mettere via?
         </p>
@@ -164,8 +177,6 @@ export default function NewGoalPage() {
           />
           <span className="text-xl text-claria-ink/40">€</span>
         </div>
-
-        {/* Quick amounts */}
         <div className="mt-3 flex flex-wrap gap-1.5 justify-center">
           {[100, 500, 1000, 2000, 5000].map((amt) => (
             <button
@@ -180,9 +191,32 @@ export default function NewGoalPage() {
         </div>
       </section>
 
-      {error && (
-        <p className="px-5 pb-3 text-xs text-red-600">{error}</p>
-      )}
+      {/* Deadline */}
+      <section className="px-5 pb-4">
+        <div className="bg-white rounded-2xl px-4 py-3.5" style={{ boxShadow: "0 2px 10px rgba(30,21,194,0.04)" }}>
+          <p className="text-[10px] uppercase tracking-[0.08em] font-medium text-claria-ink/50 mb-1.5">
+            📅 Entro quando? (opzionale)
+          </p>
+          <input
+            type="date"
+            value={deadline}
+            min={minDateStr}
+            onChange={(e) => setDeadline(e.target.value)}
+            className="bg-transparent w-full text-[14px] text-claria-ink font-medium focus:outline-none"
+          />
+          {suggestedMonthly && (
+            <p className="mt-2 text-[12px] text-claria-ink/65 leading-relaxed">
+              Per arrivarci in tempo:{" "}
+              <span className="font-semibold text-claria-ink">~{suggestedMonthly}€/mese</span>
+            </p>
+          )}
+          {deadline && !months && (
+            <p className="mt-2 text-[11px] text-amber-600">La data è già passata.</p>
+          )}
+        </div>
+      </section>
+
+      {error && <p className="px-5 pb-3 text-xs text-red-600">{error}</p>}
 
       <div className="px-5 pb-6">
         <button

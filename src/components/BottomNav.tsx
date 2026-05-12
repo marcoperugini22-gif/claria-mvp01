@@ -5,7 +5,8 @@ import { usePathname } from "next/navigation";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Home", icon: "🏠" },
-  { href: "/education", label: "Education", icon: "📚" },
+  { href: "/transactions", label: "Movimenti", icon: "💳" },
+  { href: "/education", label: "Impara", icon: "📚" },
   { href: "/about", label: "Chi siamo", icon: "👋" },
 ];
 
@@ -45,7 +46,7 @@ export function BottomNav() {
                 {item.icon}
               </span>
               <span
-                className={`text-[9.5px] font-medium tracking-[0.01em] ${
+                className={`text-[9px] font-medium tracking-[0.01em] ${
                   isActive ? "text-claria-cream" : "text-claria-cream/55"
                 }`}
               >

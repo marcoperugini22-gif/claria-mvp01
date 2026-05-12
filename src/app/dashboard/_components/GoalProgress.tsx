@@ -50,11 +50,18 @@ export function GoalProgress({
   const monthsToGoal =
     monthlySavingRate > 0 ? Math.ceil(remaining / monthlySavingRate) : null;
 
+  // Data previsione raggiungimento
+  const predictedDate: Date | null =
+    monthsToGoal != null
+      ? new Date(Date.now() + monthsToGoal * 30 * 24 * 60 * 60 * 1000)
+      : null;
+
   // Suggerimento mensile in base a deadline
   let suggestedMonthly: number | null = null;
+  let monthsLeft: number | null = null;
   if (deadline) {
     const now = new Date();
-    const monthsLeft = Math.max(
+    monthsLeft = Math.max(
       1,
       Math.ceil(
         (deadline.getTime() - now.getTime()) / (30 * 24 * 60 * 60 * 1000)
@@ -62,6 +69,28 @@ export function GoalProgress({
     );
     suggestedMonthly = remaining / monthsLeft;
   }
+
+  // Status predittivo
+  type GoalStatus = "on-track" | "at-risk" | "off-target" | null;
+  let goalStatus: GoalStatus = null;
+  if (deadline && remaining > 0) {
+    if (monthlySavingRate <= 0) {
+      goalStatus = "off-target";
+    } else if (monthsLeft != null && monthsToGoal != null) {
+      const ratio = monthsToGoal / monthsLeft;
+      if (ratio <= 1.05) goalStatus = "on-track";
+      else if (ratio <= 1.4) goalStatus = "at-risk";
+      else goalStatus = "off-target";
+    }
+  } else if (!deadline && remaining > 0 && monthlySavingRate > 0) {
+    goalStatus = "on-track";
+  }
+
+  const STATUS_CONFIG = {
+    "on-track": { label: "In linea ✓", bg: "#DCFCE7", color: "#15803D" },
+    "at-risk":  { label: "A rischio ⚠", bg: "#FEF9C3", color: "#B45309" },
+    "off-target": { label: "Fuori target !", bg: "#FEE2E2", color: "#DC2626" },
+  };
 
   const whatIfFraming =
     impulsiveTotal30d > 0
@@ -115,9 +144,22 @@ export function GoalProgress({
           </div>
         )}
         <div className="flex-1 min-w-0">
-          <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-claria-ink/55">
-            Il tuo obiettivo · {pct.toFixed(0)}%
-          </p>
+          <div className="flex items-center gap-2">
+            <p className="text-[10px] font-semibold uppercase tracking-[0.08em] text-claria-ink/55">
+              Il tuo obiettivo · {pct.toFixed(0)}%
+            </p>
+            {goalStatus && (
+              <span
+                className="text-[9.5px] font-semibold px-2 py-0.5 rounded-full"
+                style={{
+                  backgroundColor: STATUS_CONFIG[goalStatus].bg,
+                  color: STATUS_CONFIG[goalStatus].color,
+                }}
+              >
+                {STATUS_CONFIG[goalStatus].label}
+              </span>
+            )}
+          </div>
           <h3 className="mt-0.5 text-[17px] font-medium text-claria-ink leading-tight truncate">
             {title}
           </h3>
@@ -184,22 +226,30 @@ export function GoalProgress({
             📅 Piano risparmio
           </p>
           {suggestedMonthly !== null ? (
-            <p className="text-[13px] text-claria-ink/85 leading-relaxed">
-              Per arrivarci alla scadenza, dovresti mettere via{" "}
-              <span className="font-semibold tabular-nums">
-                {suggestedMonthly.toFixed(0)}€/mese
-              </span>
-              .
-            </p>
+            <>
+              <p className="text-[13px] text-claria-ink/85 leading-relaxed">
+                Per arrivarci alla scadenza, metti via{" "}
+                <span className="font-semibold tabular-nums">
+                  {suggestedMonthly.toFixed(0)}€/mese
+                </span>
+                .
+              </p>
+              {monthlySavingRate > 0 && (
+                <p className="mt-1 text-[11.5px] text-claria-ink/55">
+                  Ritmo attuale:{" "}
+                  <span className="font-medium">{monthlySavingRate.toFixed(0)}€/mese</span>
+                </p>
+              )}
+            </>
           ) : monthsToGoal !== null ? (
             <p className="text-[13px] text-claria-ink/85 leading-relaxed">
-              Al tuo ritmo attuale di{" "}
+              Al tuo ritmo (
               <span className="font-semibold tabular-nums">
                 {monthlySavingRate.toFixed(0)}€/mese
               </span>
-              , ci arrivi tra{" "}
+              ) ci arrivi a{" "}
               <span className="font-semibold tabular-nums">
-                {monthsToGoal} {monthsToGoal === 1 ? "mese" : "mesi"}
+                {predictedDate?.toLocaleDateString("it-IT", { month: "long", year: "numeric" })}
               </span>
               .
             </p>

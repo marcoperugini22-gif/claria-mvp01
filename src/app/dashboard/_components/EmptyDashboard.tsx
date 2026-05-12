@@ -29,7 +29,7 @@ export function EmptyDashboard({
   const initial = (userName?.charAt(0) ?? "?").toUpperCase();
 
   return (
-    <main className="px-5 py-5 min-h-dvh">
+    <main className="px-5 py-5 min-h-dvh pb-nav">
       {/* Header */}
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">

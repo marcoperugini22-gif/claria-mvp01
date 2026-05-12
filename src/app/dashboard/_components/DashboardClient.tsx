@@ -201,7 +201,7 @@ export function DashboardClient(props: DashboardClientProps) {
   const bal = formatBalance(props.availableBalance);
 
   return (
-    <main className="px-5 py-5 min-h-dvh space-y-4">
+    <main className="px-5 py-5 min-h-dvh space-y-4 pb-nav">
       {/* === Header === */}
       <header className="flex items-center justify-between">
         <div className="flex items-center gap-2.5">
@@ -373,7 +373,7 @@ export function DashboardClient(props: DashboardClientProps) {
               Ultime transazioni
             </p>
             <Link
-              href="/dashboard"
+              href="/transactions"
               className="text-[11px] font-medium text-claria-ink/55 underline underline-offset-2"
             >
               Vedi tutte
