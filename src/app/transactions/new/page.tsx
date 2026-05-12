@@ -1,4 +1,4 @@
-﻿"use client";
+"use client";
 
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
@@ -9,21 +9,21 @@ type Mode = "single" | "bulk" | "recurring";
 type TxType = "INCOME" | "EXPENSE";
 
 const INCOME_CATEGORIES = [
-  { value: "OTHER", label: "Stipendio", icon: "ðŸ’¼" },
-  { value: "OTHER", label: "Freelance", icon: "ðŸ’¸" },
-  { value: "OTHER", label: "Regalo", icon: "ðŸŽ" },
-  { value: "OTHER", label: "Rimborso", icon: "â†©ï¸" },
+  { value: "OTHER", label: "Stipendio", icon: "💼" },
+  { value: "OTHER", label: "Freelance", icon: "💸" },
+  { value: "OTHER", label: "Regalo", icon: "🎁" },
+  { value: "OTHER", label: "Rimborso", icon: "↩️" },
 ];
 
 const EXPENSE_CATEGORIES = [
-  { value: "FOOD", label: "Cibo", icon: "ðŸ•" },
-  { value: "TRANSPORT", label: "Trasporti", icon: "ðŸšŠ" },
-  { value: "ENTERTAINMENT", label: "Svago", icon: "ðŸŽ¬" },
-  { value: "SHOPPING", label: "Shopping", icon: "ðŸ›ï¸" },
-  { value: "BILLS", label: "Bollette", icon: "ðŸ’¡" },
-  { value: "SUBSCRIPTIONS", label: "Abbonamenti", icon: "ðŸ“º" },
-  { value: "HEALTH", label: "Salute", icon: "ðŸ’Š" },
-  { value: "EDUCATION", label: "Studio", icon: "ðŸ“š" },
+  { value: "FOOD", label: "Cibo", icon: "🍕" },
+  { value: "TRANSPORT", label: "Trasporti", icon: "🚊" },
+  { value: "ENTERTAINMENT", label: "Svago", icon: "🎬" },
+  { value: "SHOPPING", label: "Shopping", icon: "🛍️" },
+  { value: "BILLS", label: "Bollette", icon: "💡" },
+  { value: "SUBSCRIPTIONS", label: "Abbonamenti", icon: "📺" },
+  { value: "HEALTH", label: "Salute", icon: "💊" },
+  { value: "EDUCATION", label: "Studio", icon: "📚" },
 ];
 
 function NewTransactionContent() {
@@ -79,7 +79,7 @@ function NewTransactionContent() {
       router.push("/dashboard");
       router.refresh();
     } catch (e) {
-      setError("Qualcosa Ã¨ andato storto, riprova");
+      setError("Qualcosa è andato storto, riprova");
       setSubmitting(false);
     }
   }
@@ -129,7 +129,7 @@ function NewTransactionContent() {
           href="/dashboard"
           className="h-9 w-9 rounded-xl bg-claria-ink/[0.08] flex items-center justify-center text-claria-ink text-lg active:scale-95"
         >
-          â†
+          ←
         </Link>
         <h1 className="text-[15px] font-medium text-claria-ink">
           {type === "INCOME" ? "Aggiungi entrata" : "Aggiungi uscita"}
@@ -140,7 +140,7 @@ function NewTransactionContent() {
       {/* Tab switcher */}
       <div className="px-5 pb-2 flex gap-1.5">
         {(["single", "bulk", "recurring"] as const).map((m) => {
-          const labels = { single: "Singola", bulk: "Bulk âœ¨", recurring: "Ricorrente" };
+          const labels = { single: "Singola", bulk: "Bulk ✨", recurring: "Ricorrente" };
           const isActive = mode === m;
           return (
             <button
@@ -259,7 +259,7 @@ function SingleMode(p: SingleModeProps) {
             className="bg-transparent text-[56px] font-medium text-claria-ink tracking-[-0.04em] leading-none w-[200px] text-right focus:outline-none placeholder-claria-ink/20"
             autoFocus
           />
-          <span className="text-2xl text-claria-ink/40">â‚¬</span>
+          <span className="text-2xl text-claria-ink/40">€</span>
         </div>
 
         <div className="mt-3 inline-flex gap-1.5 bg-claria-ink/[0.05] p-1 rounded-full">
@@ -283,14 +283,14 @@ function SingleMode(p: SingleModeProps) {
                 : "text-claria-ink/50"
             }`}
           >
-            â€“ Uscita
+            – Uscita
           </button>
         </div>
       </div>
 
       <div className="px-5 pb-3">
         <p className="text-[10px] font-medium uppercase tracking-[0.1em] text-claria-ink/50 mb-2">
-          Cosa Ã¨?
+          Cosa è?
         </p>
         <div className="flex flex-wrap gap-1.5">
           {p.categories.map((cat, i) => (
@@ -314,7 +314,7 @@ function SingleMode(p: SingleModeProps) {
       <div className="px-5 pb-3">
         <div className="bg-white rounded-2xl px-4 py-3.5 flex items-center gap-3">
           <div className="h-8 w-8 rounded-xl bg-claria-ink/[0.06] flex items-center justify-center text-base">
-            ðŸ“
+            📝
           </div>
           <div className="flex-1">
             <p className="text-[10px] uppercase tracking-[0.08em] font-medium text-claria-ink/50">
@@ -345,11 +345,11 @@ function SingleMode(p: SingleModeProps) {
             <div className={`h-7 w-7 rounded-lg flex items-center justify-center text-sm ${
               p.isImpulsive ? "bg-orange-200 text-orange-700" : "bg-claria-ink/[0.06]"
             }`}>
-              âš¡
+              ⚡
             </div>
             <div className="flex-1 text-left">
               <p className="text-[12px] font-medium text-claria-ink">
-                Ãˆ stata una decisione veloce?
+                È stata una decisione veloce?
               </p>
               <p className="text-[10px] text-claria-ink/60 mt-0.5">
                 Niente giudizio. Solo consapevolezza.
@@ -379,7 +379,7 @@ function SingleMode(p: SingleModeProps) {
           <div className={`h-7 w-7 rounded-full flex items-center justify-center text-white text-sm ${
             p.isRecurring ? "bg-green-600" : "bg-claria-ink/40"
           }`}>
-            â†»
+            ↻
           </div>
           <div className="flex-1 text-left">
             <p className="text-[12px] font-medium text-claria-ink">
@@ -411,11 +411,11 @@ function SingleMode(p: SingleModeProps) {
           className="w-full bg-claria-ink text-claria-cream py-4 rounded-2xl text-[14px] font-medium shadow-lg disabled:opacity-40 active:scale-[0.98] flex items-center justify-between px-5"
         >
           <span>
-            {p.submitting ? "Salvoâ€¦" : p.amountValid ? `Aggiungi ${p.amountNum.toFixed(2)}â‚¬` : "Inserisci l'importo"}
+            {p.submitting ? "Salvo…" : p.amountValid ? `Aggiungi ${p.amountNum.toFixed(2)}€` : "Inserisci l'importo"}
           </span>
           {p.amountValid && !p.submitting && (
             <span className="h-7 w-7 bg-claria-cream text-claria-ink rounded-full flex items-center justify-center text-sm">
-              âœ“
+              ✓
             </span>
           )}
         </button>
@@ -450,11 +450,11 @@ function BulkMode(p: BulkModeProps) {
       <div className="px-5 pt-4">
         <div className="bg-claria-ink/[0.06] rounded-2xl p-4">
           <p className="text-[12px] text-claria-ink/80 leading-relaxed">
-            <span className="font-medium">âœ¨ Scrivi piÃ¹ transazioni insieme.</span>{" "}
+            <span className="font-medium">✨ Scrivi più transazioni insieme.</span>{" "}
             Una per riga, in italiano normale. Claria capisce importi, categorie e date.
           </p>
           <p className="mt-2 text-[11px] text-claria-ink/55 leading-relaxed">
-            Esempi: <span className="font-mono">ieri 5â‚¬ caffÃ¨</span> Â· <span className="font-mono">30 cena con amici</span> Â· <span className="font-mono">stipendio 1200</span>
+            Esempi: <span className="font-mono">ieri 5€ caffè</span> · <span className="font-mono">30 cena con amici</span> · <span className="font-mono">stipendio 1200</span>
           </p>
         </div>
       </div>
@@ -467,7 +467,7 @@ function BulkMode(p: BulkModeProps) {
             p.setBulkPreview(null);
           }}
           rows={6}
-          placeholder="Scrivi qui le tue transazioniâ€¦&#10;Esempio:&#10;ieri 5â‚¬ caffÃ¨&#10;30â‚¬ cena con amici&#10;stipendio 1200"
+          placeholder="Scrivi qui le tue transazioni…&#10;Esempio:&#10;ieri 5€ caffè&#10;30€ cena con amici&#10;stipendio 1200"
           className="w-full bg-white border-2 border-claria-ink/10 rounded-2xl p-4 text-[14px] text-claria-ink font-mono focus:outline-none focus:border-claria-ink/30 placeholder-claria-ink/30"
         />
       </div>
@@ -480,7 +480,7 @@ function BulkMode(p: BulkModeProps) {
             disabled={!p.bulkText.trim() || p.submitting}
             className="w-full bg-claria-ink text-claria-cream py-4 rounded-2xl text-[14px] font-medium disabled:opacity-40 active:scale-[0.98]"
           >
-            {p.submitting ? "Analizzoâ€¦" : "âœ¨ Analizza con Claria"}
+            {p.submitting ? "Analizzo…" : "✨ Analizza con Claria"}
           </button>
         </div>
       )}
@@ -498,18 +498,18 @@ function BulkMode(p: BulkModeProps) {
                 <div className={`h-8 w-8 rounded-xl flex items-center justify-center text-sm ${
                   tx.type === "INCOME" ? "bg-green-100 text-green-700" : "bg-claria-ink/[0.06]"
                 }`}>
-                  {tx.type === "INCOME" ? "+" : "â€“"}
+                  {tx.type === "INCOME" ? "+" : "–"}
                 </div>
                 <div className="flex-1 min-w-0">
                   <p className="text-[13px] font-medium text-claria-ink truncate">{tx.description}</p>
                   <p className="text-[10px] text-claria-ink/50 mt-0.5">
-                    {tx.category} Â· confidence {Math.round(tx.confidence * 100)}%
+                    {tx.category} · confidence {Math.round(tx.confidence * 100)}%
                   </p>
                 </div>
                 <p className={`text-[14px] font-medium tabular-nums ${
                   tx.type === "INCOME" ? "text-green-700" : "text-claria-ink"
                 }`}>
-                  {tx.type === "INCOME" ? "+" : "âˆ’"}{tx.amount.toFixed(2)}â‚¬
+                  {tx.type === "INCOME" ? "+" : "−"}{tx.amount.toFixed(2)}€
                 </p>
               </div>
             ))}
@@ -529,7 +529,7 @@ function BulkMode(p: BulkModeProps) {
               disabled={p.submitting || p.bulkPreview.length === 0}
               className="flex-[2] bg-claria-ink text-claria-cream py-3 rounded-2xl text-[13px] font-medium disabled:opacity-40 active:scale-[0.98]"
             >
-              {p.submitting ? "Salvoâ€¦" : `Salva ${p.bulkPreview.length} transazioni`}
+              {p.submitting ? "Salvo…" : `Salva ${p.bulkPreview.length} transazioni`}
             </button>
           </div>
         </>
@@ -548,8 +548,8 @@ function RecurringMode(p: RecurringModeProps) {
       <div className="px-5 pt-4">
         <div className="bg-green-50 border border-green-200 rounded-2xl p-4">
           <p className="text-[12px] text-green-800 leading-relaxed">
-            <span className="font-medium">â†» Ricorrenza mensile.</span>{" "}
-            Imposta una volta sola â€” Claria la registra ogni mese in automatico.
+            <span className="font-medium">↻ Ricorrenza mensile.</span>{" "}
+            Imposta una volta sola — Claria la registra ogni mese in automatico.
           </p>
         </div>
       </div>
