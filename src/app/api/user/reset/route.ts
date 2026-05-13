@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { getUserIdFromCookie, clearUserCookie } from "@/lib/session";
+import { getServerUserId, clearUserCookie } from "@/lib/session";
 
 /**
  * POST /api/user/reset
@@ -11,7 +11,7 @@ import { getUserIdFromCookie, clearUserCookie } from "@/lib/session";
  */
 export async function POST() {
   try {
-    const userId = getUserIdFromCookie();
+    const userId = await getServerUserId();
 
     if (userId) {
       // Verifica che l'utente esista ancora, poi cancella.

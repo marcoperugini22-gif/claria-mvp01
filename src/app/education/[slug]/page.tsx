@@ -1,7 +1,7 @@
 import { redirect, notFound } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
-import { getUserIdFromCookie } from "@/lib/session";
+import { getServerUserId } from "@/lib/session";
 import { getToneConfig } from "@/lib/profiling/toneEngine";
 import { getArticle } from "@/lib/educationContent";
 
@@ -10,8 +10,8 @@ export default async function ArticlePage({
 }: {
   params: { slug: string };
 }) {
-  const userId = getUserIdFromCookie();
-  if (!userId) redirect("/onboarding");
+  const userId = await getServerUserId();
+  if (!userId) redirect("/auth/login");
 
   const article = getArticle(params.slug);
   if (!article) notFound();

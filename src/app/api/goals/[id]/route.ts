@@ -1,13 +1,13 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { getUserIdFromCookie } from "@/lib/session";
+import { getServerUserId } from "@/lib/session";
 
 export async function POST(
   _req: Request,
   { params }: { params: { id: string } }
 ) {
   try {
-    const userId = getUserIdFromCookie();
+    const userId = await getServerUserId();
     if (!userId) {
       return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
     }
@@ -44,7 +44,7 @@ export async function DELETE(
   { params }: { params: { id: string } }
 ) {
   try {
-    const userId = getUserIdFromCookie();
+    const userId = await getServerUserId();
     if (!userId) {
       return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
     }

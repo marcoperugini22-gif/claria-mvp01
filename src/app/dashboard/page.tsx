@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
-import { getUserIdFromCookie } from "@/lib/session";
+import { getServerUserId } from "@/lib/session";
 import { getToneConfig } from "@/lib/profiling/toneEngine";
 import { analyzeSpending, type TransactionLike } from "@/lib/profiling/spendingAnalytics";
 import { computeOnboardingTasks } from "@/lib/onboardingTasks";
@@ -9,8 +9,8 @@ import { DashboardClient } from "./_components/DashboardClient";
 import { EmptyDashboard } from "./_components/EmptyDashboard";
 
 export default async function DashboardPage() {
-  const userId = getUserIdFromCookie();
-  if (!userId) redirect("/onboarding");
+  const userId = await getServerUserId();
+  if (!userId) redirect("/auth/login");
 
   const [user, tasksState] = await Promise.all([
     prisma.user.findUnique({

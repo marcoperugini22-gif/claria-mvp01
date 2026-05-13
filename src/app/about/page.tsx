@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
-import { getUserIdFromCookie } from "@/lib/session";
+import { getServerUserId } from "@/lib/session";
 
 interface Founder {
   name: string;
@@ -53,8 +53,8 @@ const FOUNDERS: Founder[] = [
 ];
 
 export default async function AboutPage() {
-  const userId = getUserIdFromCookie();
-  if (!userId) redirect("/onboarding");
+  const userId = await getServerUserId();
+  if (!userId) redirect("/auth/login");
 
   const user = await prisma.user.findUnique({
     where: { id: userId },

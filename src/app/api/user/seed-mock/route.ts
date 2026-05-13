@@ -1,11 +1,11 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/db";
-import { getUserIdFromCookie } from "@/lib/session";
+import { getServerUserId } from "@/lib/session";
 import { seedMockDataForUser } from "@/lib/mockData/seedUserMock";
 
 export async function POST() {
   try {
-    const userId = getUserIdFromCookie();
+    const userId = await getServerUserId();
     if (!userId) {
       return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
     }

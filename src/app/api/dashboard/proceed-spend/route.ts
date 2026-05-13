@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { getUserIdFromCookie } from "@/lib/session";
+import { getServerUserId } from "@/lib/session";
 
 const proceedSchema = z.object({
   amount: z.number().positive().max(100000),
@@ -10,7 +10,7 @@ const proceedSchema = z.object({
 
 export async function POST(req: Request) {
   try {
-    const userId = getUserIdFromCookie();
+    const userId = await getServerUserId();
     if (!userId) {
       return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
     }

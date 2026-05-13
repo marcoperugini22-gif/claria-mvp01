@@ -172,6 +172,7 @@ model User {
 
   // Auth minima per l'MVP – sostituibile con NextAuth/Clerk in produzione
   hashedPassword String?
+  supabaseId     String?  @unique
 
   role UserRole @default(END_USER)
 

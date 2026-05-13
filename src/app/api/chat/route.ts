@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
-import { getUserIdFromCookie } from "@/lib/session";
+import { getServerUserId } from "@/lib/session";
 import { prisma } from "@/lib/db";
 import { getToneConfig } from "@/lib/profiling/toneEngine";
 import { computeAvailableBalance } from "@/lib/balance";
@@ -120,7 +120,7 @@ function getMockResponse(msg: string): string {
 
 export async function POST(req: Request) {
   try {
-    const userId = getUserIdFromCookie();
+    const userId = await getServerUserId();
     if (!userId) {
       return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
     }

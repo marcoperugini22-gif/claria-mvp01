@@ -1,7 +1,7 @@
 "use client";
 
 import Link from "next/link";
-import { usePathname } from "next/navigation";
+import { usePathname, useRouter } from "next/navigation";
 
 const NAV_ITEMS = [
   { href: "/dashboard", label: "Home", icon: "🏠" },
@@ -10,11 +10,29 @@ const NAV_ITEMS = [
   { href: "/about", label: "Chi siamo", icon: "👋" },
 ];
 
+const HIDDEN_PATHS = ["/auth", "/", "/onboarding"];
+
 export function AppNav() {
   const pathname = usePathname();
+  const router = useRouter();
+
+  const shouldHide = HIDDEN_PATHS.some(
+    (p) => pathname === p || (p !== "/" && pathname.startsWith(p))
+  );
+  if (shouldHide) return null;
 
   function isActive(href: string) {
     return pathname === href || (href !== "/" && pathname.startsWith(href));
+  }
+
+  async function handleLogout() {
+    try {
+      await fetch("/api/auth/logout", { method: "POST" });
+    } catch {
+      // ignore
+    }
+    router.push("/auth/login");
+    router.refresh();
   }
 
   return (
@@ -74,6 +92,20 @@ export function AppNav() {
             );
           })}
         </div>
+
+        {/* Logout */}
+        <button
+          type="button"
+          onClick={handleLogout}
+          aria-label="Esci"
+          className="mb-2 flex flex-col items-center gap-1 py-2.5 px-2 w-full rounded-[14px] transition-all active:scale-95"
+          style={{ opacity: 0.4 }}
+          onMouseEnter={(e) => { (e.currentTarget as HTMLElement).style.opacity = "0.8"; }}
+          onMouseLeave={(e) => { (e.currentTarget as HTMLElement).style.opacity = "0.4"; }}
+        >
+          <span className="text-[18px] leading-none">↩</span>
+          <span className="text-[8px] font-medium tracking-[0.02em] text-claria-cream">Esci</span>
+        </button>
 
         {/* Beta badge */}
         <span className="text-[7px] font-semibold tracking-[0.12em] uppercase" style={{ color: "rgba(255,247,206,0.2)" }}>

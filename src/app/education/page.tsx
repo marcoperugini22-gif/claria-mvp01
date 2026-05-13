@@ -1,6 +1,6 @@
 import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
-import { getUserIdFromCookie } from "@/lib/session";
+import { getServerUserId } from "@/lib/session";
 import { getToneConfig } from "@/lib/profiling/toneEngine";
 import { EducationClient } from "./_components/EducationClient";
 
@@ -66,14 +66,14 @@ const EDUCATION_CARDS = [
 ];
 
 export default async function EducationPage() {
-  const userId = getUserIdFromCookie();
-  if (!userId) redirect("/onboarding");
+  const userId = await getServerUserId();
+  if (!userId) redirect("/auth/login");
 
   const user = await prisma.user.findUnique({
     where: { id: userId },
     select: { profile: true, name: true },
   });
-  if (!user) redirect("/onboarding");
+  if (!user) redirect("/auth/login");
 
   const tone = getToneConfig(user.profile);
 

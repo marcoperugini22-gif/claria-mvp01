@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { setUserCookie, getUserIdFromCookie } from "@/lib/session";
+import { setUserCookie, getServerUserId } from "@/lib/session";
 
 const startSchema = z.object({
   email: z.string().email("Email non valida"),
@@ -58,7 +58,7 @@ export async function POST(req: Request) {
  * GET → ritorna lo stato dell'utente corrente (se loggato via cookie)
  */
 export async function GET() {
-  const userId = getUserIdFromCookie();
+  const userId = await getServerUserId();
   if (!userId) {
     return NextResponse.json({ user: null });
   }

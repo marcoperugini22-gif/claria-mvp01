@@ -1,7 +1,7 @@
 import { redirect } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
-import { getUserIdFromCookie } from "@/lib/session";
+import { getServerUserId } from "@/lib/session";
 
 const CATEGORY_STYLE: Record<string, { icon: string; from: string; to: string }> = {
   FOOD:          { icon: "🍕", from: "#FEF3C7", to: "#FDE68A" },
@@ -38,8 +38,8 @@ function fmtGroupKey(d: Date) {
 }
 
 export default async function TransactionsPage() {
-  const userId = getUserIdFromCookie();
-  if (!userId) redirect("/onboarding");
+  const userId = await getServerUserId();
+  if (!userId) redirect("/auth/login");
 
   const transactions = await prisma.transaction.findMany({
     where: { userId },

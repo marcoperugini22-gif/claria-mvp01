@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { z } from "zod";
 import { prisma } from "@/lib/db";
-import { getUserIdFromCookie } from "@/lib/session";
+import { getServerUserId } from "@/lib/session";
 
 const VALID_CATEGORIES = [
   "FOOD", "TRANSPORT", "ENTERTAINMENT", "SHOPPING", "BILLS", "HEALTH",
@@ -24,7 +24,7 @@ const createSchema = z.object({
 
 export async function POST(req: Request) {
   try {
-    const userId = getUserIdFromCookie();
+    const userId = await getServerUserId();
     if (!userId) {
       return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
     }
@@ -93,7 +93,7 @@ export async function POST(req: Request) {
 
 export async function GET() {
   try {
-    const userId = getUserIdFromCookie();
+    const userId = await getServerUserId();
     if (!userId) {
       return NextResponse.json({ error: "Non autenticato" }, { status: 401 });
     }
