@@ -78,7 +78,7 @@ export function ChatWidget() {
 
       {/* Chat drawer */}
       {open && (
-        <div className="fixed inset-0 z-50 flex items-end justify-center pointer-events-none">
+        <div className="fixed inset-0 z-50 flex items-end justify-center md:pl-[72px] pointer-events-none">
           <div
             className="pointer-events-auto w-full max-w-md rounded-t-[28px] flex flex-col"
             style={{
