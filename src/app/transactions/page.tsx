@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { getUserIdFromCookie } from "@/lib/session";
-import { BottomNav } from "@/components/BottomNav";
 
 const CATEGORY_STYLE: Record<string, { icon: string; from: string; to: string }> = {
   FOOD:          { icon: "🍕", from: "#FEF3C7", to: "#FDE68A" },
@@ -213,7 +212,6 @@ export default async function TransactionsPage() {
           );
         })}
       </section>
-      <BottomNav />
     </main>
   );
 }

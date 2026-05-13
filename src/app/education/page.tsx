@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 import { prisma } from "@/lib/db";
 import { getUserIdFromCookie } from "@/lib/session";
 import { getToneConfig } from "@/lib/profiling/toneEngine";
-import { BottomNav } from "@/components/BottomNav";
 import { EducationClient } from "./_components/EducationClient";
 
 const EDUCATION_CARDS = [
@@ -108,7 +107,6 @@ export default async function EducationPage() {
         accentColor={tone.accentColor}
       />
 
-      <BottomNav />
     </main>
   );
 }

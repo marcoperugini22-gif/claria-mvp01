@@ -3,7 +3,6 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
-import { BottomNav } from "@/components/BottomNav";
 
 const GOAL_TEMPLATES = [
   { category: "TRAVEL", icon: "✈️", title: "Viaggio", suggestedAmount: 1000 },
@@ -235,7 +234,6 @@ export default function NewGoalPage() {
           )}
         </button>
       </div>
-      <BottomNav />
     </main>
   );
 }

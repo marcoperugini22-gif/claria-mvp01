@@ -4,7 +4,6 @@ import { prisma } from "@/lib/db";
 import { getUserIdFromCookie } from "@/lib/session";
 import { getToneConfig } from "@/lib/profiling/toneEngine";
 import { getArticle } from "@/lib/educationContent";
-import { BottomNav } from "@/components/BottomNav";
 
 export default async function ArticlePage({
   params,
@@ -24,7 +23,7 @@ export default async function ArticlePage({
   const tone = getToneConfig(user?.profile);
 
   return (
-    <main className="px-5 py-5 min-h-dvh">
+    <main className="px-5 py-5 min-h-dvh pb-nav">
       {/* Back */}
       <Link
         href="/education"
@@ -100,7 +99,6 @@ export default async function ArticlePage({
         Claria · Education
       </p>
 
-      <BottomNav />
     </main>
   );
 }

@@ -7,7 +7,6 @@ import { computeOnboardingTasks } from "@/lib/onboardingTasks";
 import { computeAvailableBalance } from "@/lib/balance";
 import { DashboardClient } from "./_components/DashboardClient";
 import { EmptyDashboard } from "./_components/EmptyDashboard";
-import { BottomNav } from "@/components/BottomNav";
 
 export default async function DashboardPage() {
   const userId = getUserIdFromCookie();
@@ -41,7 +40,6 @@ export default async function DashboardPage() {
           tasks={tasksState.tasks}
           completedCount={tasksState.completedCount}
         />
-        <BottomNav />
       </>
     );
   }
@@ -184,7 +182,6 @@ export default async function DashboardPage() {
             : null
         }
       />
-      <BottomNav />
     </>
   );
 }

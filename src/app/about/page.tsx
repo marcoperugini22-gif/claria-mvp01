@@ -2,7 +2,6 @@ import { redirect } from "next/navigation";
 import Link from "next/link";
 import { prisma } from "@/lib/db";
 import { getUserIdFromCookie } from "@/lib/session";
-import { BottomNav } from "@/components/BottomNav";
 
 interface Founder {
   name: string;
@@ -64,7 +63,7 @@ export default async function AboutPage() {
   if (!user) redirect("/onboarding");
 
   return (
-    <main className="px-5 py-5 min-h-dvh">
+    <main className="px-5 py-5 min-h-dvh pb-nav">
       {/* Header */}
       <header>
         <p className="text-[10px] font-medium uppercase tracking-[0.08em] text-claria-ink/50">
@@ -176,7 +175,6 @@ export default async function AboutPage() {
         Claria · MVP · Made in Italy 🇮🇹
       </p>
 
-      <BottomNav />
     </main>
   );
 }

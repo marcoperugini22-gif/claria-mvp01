@@ -2,6 +2,7 @@ import type { Metadata, Viewport } from "next";
 import { Inter } from "next/font/google";
 import "./globals.css";
 import { ChatWidget } from "@/components/ChatWidget";
+import { AppNav } from "@/components/AppNav";
 
 const inter = Inter({
   subsets: ["latin"],
@@ -31,7 +32,13 @@ export default function RootLayout({
   return (
     <html lang="it" className={inter.variable}>
       <body className="bg-claria-cream text-claria-ink">
-        <div className="mx-auto min-h-dvh max-w-md">{children}</div>
+        <AppNav />
+        {/* md:pl-[72px] sposta il contenuto a destra della sidebar su desktop */}
+        <div className="md:pl-[72px]">
+          <div className="mx-auto min-h-dvh max-w-md">
+            {children}
+          </div>
+        </div>
         <ChatWidget />
       </body>
     </html>

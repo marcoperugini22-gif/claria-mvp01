@@ -60,8 +60,8 @@ export function ChatWidget() {
 
   return (
     <>
-      {/* Floating button — centrato nel max-w-md container */}
-      <div className="fixed bottom-[82px] left-1/2 -translate-x-1/2 w-full max-w-md px-5 z-50 flex justify-end pointer-events-none">
+      {/* Floating button — bottom-[82px] su mobile (sopra bottom nav), bottom-6 su desktop */}
+      <div className="fixed bottom-[82px] md:bottom-6 left-1/2 -translate-x-1/2 w-full max-w-md md:pl-[72px] px-5 z-50 flex justify-end pointer-events-none">
         <button
           type="button"
           onClick={() => setOpen((v) => !v)}

@@ -3,7 +3,6 @@
 import { Suspense, useState } from "react";
 import { useRouter, useSearchParams } from "next/navigation";
 import Link from "next/link";
-import { BottomNav } from "@/components/BottomNav";
 
 type Mode = "single" | "bulk" | "recurring";
 type TxType = "INCOME" | "EXPENSE";
@@ -122,7 +121,7 @@ function NewTransactionContent() {
   }
 
   return (
-    <main className="min-h-dvh">
+    <main className="min-h-dvh pb-nav">
       {/* Header */}
       <header className="px-5 pt-5 pb-3 flex items-center justify-between">
         <Link
@@ -216,7 +215,6 @@ function NewTransactionContent() {
           amountNum={amountNum}
         />
       )}
-      <BottomNav />
     </main>
   );
 }
