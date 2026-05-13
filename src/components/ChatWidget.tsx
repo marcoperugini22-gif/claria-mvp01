@@ -44,11 +44,15 @@ export function ChatWidget() {
         headers: { "Content-Type": "application/json" },
         body: JSON.stringify({ messages: next }),
       });
-      if (!res.ok) throw new Error();
       const data = await res.json();
-      setMessages([...next, { role: "assistant", content: data.reply }]);
+      if (!res.ok) {
+        setError(data.error ?? "Non riesco a rispondere ora. Riprova tra poco.");
+        return;
+      }
+      const reply: string = data.reply ?? "Non ho ricevuto una risposta. Riprova.";
+      setMessages([...next, { role: "assistant", content: reply }]);
     } catch {
-      setError("Non riesco a rispondere ora. Riprova tra poco.");
+      setError("Errore di rete. Controlla la connessione e riprova.");
     } finally {
       setLoading(false);
     }
