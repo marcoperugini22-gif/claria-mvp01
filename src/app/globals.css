@@ -47,8 +47,8 @@ body {
     @apply border border-claria-ink/15 bg-white text-claria-ink rounded-2xl font-medium transition-all active:scale-[0.98] disabled:opacity-40;
   }
 
-  /* Bottom nav clearance — solo mobile; su desktop la sidebar non copre il fondo */
+  /* Bottom clearance — lascia spazio al FAB mobile (bottom-6 + h-12) e alla sidebar desktop */
   .pb-nav {
-    @apply pb-28 md:pb-8;
+    @apply pb-24 md:pb-8;
   }
 }

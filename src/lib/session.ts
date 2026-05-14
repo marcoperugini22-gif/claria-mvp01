@@ -53,14 +53,7 @@ export async function getServerUserId(): Promise<string | null> {
 
         if (!prismaUser && sUser.email) {
           try {
-            // 2. Prova a collegare account esistente per email
-            prismaUser = await prisma.user.update({
-              where: { email: sUser.email },
-              data: { supabaseId: sUser.id },
-              select: { id: true },
-            });
-          } catch {
-            // 3. Nessun utente trovato → crea nuovo
+            // 2. Prova a creare nuovo utente
             prismaUser = await prisma.user.create({
               data: {
                 email: sUser.email,
@@ -69,6 +62,19 @@ export async function getServerUserId(): Promise<string | null> {
               },
               select: { id: true },
             });
+          } catch (createErr: unknown) {
+            // 3. Email già esistente (P2002) → collega senza sovrascrivere profilo
+            if ((createErr as { code?: string }).code === "P2002") {
+              try {
+                prismaUser = await prisma.user.update({
+                  where: { email: sUser.email },
+                  data: { supabaseId: sUser.id },
+                  select: { id: true },
+                });
+              } catch {
+                // ignore
+              }
+            }
           }
         }
 

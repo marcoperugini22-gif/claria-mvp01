@@ -1,7 +1,6 @@
 "use client";
 
 import { useState } from "react";
-import { useRouter } from "next/navigation";
 import Link from "next/link";
 import { createSupabaseClient } from "@/lib/supabase/client";
 
@@ -19,11 +18,11 @@ function ClariaLogo() {
 }
 
 export default function ResetPasswordPage() {
-  const router = useRouter();
   const [password, setPassword] = useState("");
   const [confirm, setConfirm] = useState("");
   const [loading, setLoading] = useState(false);
   const [error, setError] = useState<string | null>(null);
+  const [done, setDone] = useState(false);
 
   async function handleReset(e: React.FormEvent) {
     e.preventDefault();
@@ -50,8 +49,32 @@ export default function ResetPasswordPage() {
       return;
     }
 
-    router.push("/dashboard");
-    router.refresh();
+    setDone(true);
+    setLoading(false);
+  }
+
+  if (done) {
+    return (
+      <main className="min-h-dvh px-6 pt-12 pb-8 flex flex-col max-w-md mx-auto">
+        <div className="mb-10"><ClariaLogo /></div>
+        <div className="flex-1 flex flex-col justify-center text-center">
+          <div className="text-5xl mb-5">✅</div>
+          <h2 className="text-[24px] font-medium tracking-[-0.02em] text-claria-ink">
+            Password aggiornata
+          </h2>
+          <p className="mt-3 text-[14px] text-claria-ink/65 leading-relaxed max-w-xs mx-auto">
+            La tua password è stata aggiornata. Accedi con le nuove credenziali.
+          </p>
+        </div>
+        <Link
+          href="/login"
+          className="block w-full text-center rounded-[18px] bg-claria-ink py-4 text-claria-cream font-medium active:scale-[0.98] transition-transform"
+          style={{ boxShadow: "0 6px 20px rgba(30,21,194,0.25)" }}
+        >
+          Vai al login
+        </Link>
+      </main>
+    );
   }
 
   return (

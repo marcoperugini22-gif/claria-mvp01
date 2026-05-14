@@ -7,20 +7,23 @@ import { getToneConfig } from "@/lib/profiling/toneEngine";
 
 export default async function OnboardingResultPage() {
   const userId = await getServerUserId();
-  if (!userId) redirect("/auth/login");
+  if (!userId) redirect("/login");
 
-  const user = await prisma.user.findUnique({
-    where: { id: userId },
-    select: {
-      name: true,
-      profile: true,
-      profileConfidence: true,
-      onboardingCompletedAt: true,
-      primaryGoal: true,
-    },
-  });
+  const [user, answerCount] = await Promise.all([
+    prisma.user.findUnique({
+      where: { id: userId },
+      select: {
+        name: true,
+        profile: true,
+        profileConfidence: true,
+        onboardingCompletedAt: true,
+        primaryGoal: true,
+      },
+    }),
+    prisma.onboardingAnswer.count({ where: { userId } }),
+  ]);
 
-  if (!user || !user.onboardingCompletedAt) {
+  if (!user || !user.onboardingCompletedAt || answerCount === 0) {
     redirect("/onboarding");
   }
 
