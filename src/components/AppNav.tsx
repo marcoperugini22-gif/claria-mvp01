@@ -10,7 +10,7 @@ const NAV_ITEMS = [
   { href: "/about", label: "Chi siamo", icon: "👋" },
 ];
 
-const HIDDEN_PATHS = ["/auth", "/", "/onboarding"];
+const HIDDEN_PATHS = ["/login", "/signup", "/forgot-password", "/reset-password", "/", "/onboarding"];
 
 export function AppNav() {
   const pathname = usePathname();

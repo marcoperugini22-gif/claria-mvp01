@@ -22,7 +22,7 @@ export async function middleware(request: NextRequest) {
   if (!supabaseUrl || !supabaseKey) {
     const hasLegacy = !!request.cookies.get("claria_uid")?.value;
     if (!hasLegacy) {
-      return NextResponse.redirect(new URL("/auth/login", request.url));
+      return NextResponse.redirect(new URL("/login", request.url));
     }
     return NextResponse.next();
   }
@@ -50,7 +50,7 @@ export async function middleware(request: NextRequest) {
   const hasLegacyCookie = !!request.cookies.get("claria_uid")?.value;
 
   if (!hasSupabaseAuth && !hasLegacyCookie) {
-    return NextResponse.redirect(new URL("/auth/login", request.url));
+    return NextResponse.redirect(new URL("/login", request.url));
   }
 
   return supabaseResponse;
